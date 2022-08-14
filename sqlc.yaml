@@ -1,0 +1,8 @@
+version: 1
+packages:
+  - path: "./pkg/repository/db"
+    name: "db"
+    engine: "postgresql"
+    schema: "./pkg/repository/schema.sql"
+    queries: "./pkg/repository/query.sql"
+    emit_json_tags: true
