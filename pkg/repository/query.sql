@@ -1,4 +1,4 @@
--- name: GetAllBook :many
+-- name: ListBooks :many
 SELECT * FROM books
 ORDER BY id;
 

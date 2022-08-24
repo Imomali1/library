@@ -13,5 +13,5 @@ type Book struct {
 	Title       string        `json:"title"`
 	Description string        `json:"description"`
 	AuthorName  string        `json:"author_name"`
-	Price       sql.NullInt32 `json:"price"`
+	Price       sql.NullInt64 `json:"price"`
 }

@@ -23,7 +23,7 @@ type CreateBookParams struct {
 	Title       string        `json:"title"`
 	Description string        `json:"description"`
 	AuthorName  string        `json:"author_name"`
-	Price       sql.NullInt32 `json:"price"`
+	Price       sql.NullInt64 `json:"price"`
 }
 
 func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (Book, error) {
@@ -54,13 +54,31 @@ func (q *Queries) DeleteBookById(ctx context.Context, id int64) error {
 	return err
 }
 
-const getAllBook = `-- name: GetAllBook :many
+const getBookById = `-- name: GetBookById :one
+SELECT id, title, description, author_name, price FROM books
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetBookById(ctx context.Context, id int64) (Book, error) {
+	row := q.db.QueryRowContext(ctx, getBookById, id)
+	var i Book
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Description,
+		&i.AuthorName,
+		&i.Price,
+	)
+	return i, err
+}
+
+const listBooks = `-- name: ListBooks :many
 SELECT id, title, description, author_name, price FROM books
 ORDER BY id
 `
 
-func (q *Queries) GetAllBook(ctx context.Context) ([]Book, error) {
-	rows, err := q.db.QueryContext(ctx, getAllBook)
+func (q *Queries) ListBooks(ctx context.Context) ([]Book, error) {
+	rows, err := q.db.QueryContext(ctx, listBooks)
 	if err != nil {
 		return nil, err
 	}
@@ -88,24 +106,6 @@ func (q *Queries) GetAllBook(ctx context.Context) ([]Book, error) {
 	return items, nil
 }
 
-const getBookById = `-- name: GetBookById :one
-SELECT id, title, description, author_name, price FROM books
-WHERE id = $1 LIMIT 1
-`
-
-func (q *Queries) GetBookById(ctx context.Context, id int64) (Book, error) {
-	row := q.db.QueryRowContext(ctx, getBookById, id)
-	var i Book
-	err := row.Scan(
-		&i.ID,
-		&i.Title,
-		&i.Description,
-		&i.AuthorName,
-		&i.Price,
-	)
-	return i, err
-}
-
 const updateBookById = `-- name: UpdateBookById :exec
 UPDATE books
 SET title = $2,
@@ -120,7 +120,7 @@ type UpdateBookByIdParams struct {
 	Title       string        `json:"title"`
 	Description string        `json:"description"`
 	AuthorName  string        `json:"author_name"`
-	Price       sql.NullInt32 `json:"price"`
+	Price       sql.NullInt64 `json:"price"`
 }
 
 func (q *Queries) UpdateBookById(ctx context.Context, arg UpdateBookByIdParams) error {
